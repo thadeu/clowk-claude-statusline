@@ -3,11 +3,11 @@
 A two-line status line for [Claude Code](https://claude.com/claude-code), in pure bash.
 
 ```
-Fable 5.1 HIGH  │  󰉋 clowk-js  │   main ●
+Fable 5.1 HIGH  │  󰉋 clowk-js (main●)
 ctx ▰▰▰▰▱▱▱▱▱▱ 42%/200k  │  5h ▰▰▱▱▱▱ 31% 2h05m  │  7d ▰▰▰▰▰▱ 76% 3d01h
 ```
 
-- **Line 1:** model · effort level · repo · git branch (`●` = dirty tree)
+- **Line 1:** model · effort level · `repo (branch)` (`●` = dirty tree)
 - **Line 2:** gauges for context usage, 5-hour limit and 7-day limit. Each limit shows the time until reset.
 - Gauges turn amber at 70% and red at 90%.
 

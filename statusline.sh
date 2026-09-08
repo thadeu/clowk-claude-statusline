@@ -13,9 +13,9 @@ C_OK=$'\e[38;5;114m'; C_WARN=$'\e[38;5;221m'; C_BAD=$'\e[38;5;203m'
 C_MUTED=$'\e[38;5;245m'; C_TRACK=$'\e[38;5;238m'
 
 if [[ -n $STATUSLINE_ASCII ]]; then
-  ON="#"; OFF="."; SEP="  |  "; I_REPO=""; I_BRANCH=""; I_DIRTY="*"
+  ON="#"; OFF="."; SEP="  |  "; I_REPO=""; I_DIRTY="*"
 else
-  ON="▰"; OFF="▱"; SEP="  │  "; I_REPO="󰉋 "; I_BRANCH=" "; I_DIRTY="●"
+  ON="▰"; OFF="▱"; SEP="  │  "; I_REPO="󰉋 "; I_DIRTY="●"
 fi
 SEP="${C_TRACK}${SEP}${RESET}"
 
@@ -50,8 +50,8 @@ line1+="${SEP}${C_REPO}${I_REPO}$(basename "$cwd")${RESET}"
 
 if root=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null); then
   branch=$(git -C "$cwd" symbolic-ref --short -q HEAD 2>/dev/null) || branch=$(git -C "$cwd" rev-parse --short HEAD 2>/dev/null) || branch="?"
-  dirty=""; [[ -n $(git -C "$cwd" status --porcelain 2>/dev/null) ]] && dirty=" ${C_WARN}${I_DIRTY}${RESET}"
-  line1+="${SEP}${C_BRANCH}${I_BRANCH}${branch}${RESET}${dirty}"
+  dirty=""; [[ -n $(git -C "$cwd" status --porcelain 2>/dev/null) ]] && dirty="${C_WARN}${I_DIRTY}${RESET}"
+  line1+=" ${C_MUTED}(${RESET}${C_BRANCH}${branch}${RESET}${dirty}${C_MUTED})${RESET}"
 fi
 
 # ---------- line 2: gauges ----------
