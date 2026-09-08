@@ -8,7 +8,7 @@ ctx ▰▰▰▰▱▱▱▱▱▱ 42%/200k  │  5h ▰▰▱▱▱▱ 31% 2h05
 ```
 
 - **Line 1:** model · effort level · repo · git branch (`●` = dirty tree)
-- **Line 2:** gauges for context usage, 5-hour limit and 7-day limit. Each limit shows the time until reset (`↻`).
+- **Line 2:** gauges for context usage, 5-hour limit and 7-day limit. Each limit shows the time until reset.
 - Gauges turn amber at 70% and red at 90%.
 
 ## Requirements
