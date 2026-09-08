@@ -75,4 +75,4 @@ done
 line2=""
 for p in "${parts[@]}"; do [[ -n $line2 ]] && line2+="$SEP"; line2+="$p"; done
 
-printf '%s\n%s\n' "$line1" "$line2"
+printf '%s\n%s\n ' "$line1" "$line2"
