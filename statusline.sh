@@ -13,10 +13,11 @@ C_OK=$'\e[38;5;114m'; C_WARN=$'\e[38;5;221m'; C_BAD=$'\e[38;5;203m'
 C_MUTED=$'\e[38;5;245m'; C_TRACK=$'\e[38;5;238m'
 
 if [[ -n $STATUSLINE_ASCII ]]; then
-  ON="#"; OFF="."; DOT=" - "; I_REPO=""; I_BRANCH=""; I_DIRTY="*"; I_RESET="~"
+  ON="#"; OFF="."; SEP="  |  "; I_REPO=""; I_BRANCH=""; I_DIRTY="*"
 else
-  ON="▰"; OFF="▱"; DOT=" · "; I_REPO="󰉋 "; I_BRANCH=" "; I_DIRTY="●"; I_RESET="↻"
+  ON="▰"; OFF="▱"; SEP="  │  "; I_REPO="󰉋 "; I_BRANCH=" "; I_DIRTY="●"
 fi
+SEP="${C_TRACK}${SEP}${RESET}"
 
 tone() { local p=$1; if (( p >= 90 )); then printf '%s' "$C_BAD"; elif (( p >= 70 )); then printf '%s' "$C_WARN"; else printf '%s' "$C_OK"; fi; }
 
@@ -27,8 +28,8 @@ gauge() {
   local filled=$(( (pct * width + 50) / 100 ))
   for ((i=0;i<filled;i++)); do on+=$ON; done
   for ((i=filled;i<width;i++)); do off+=$OFF; done
-  printf '%s%s%s %s%s%s%s%s %s%3d%%%s%s' "$C_MUTED" "$label" "$RESET" \
-    "$(tone "$pct")" "$on" "$C_TRACK" "$off" "$RESET" "$(tone "$pct")" "$pct" "$RESET" "$suffix"
+  printf '%s%s%s %s%s%s%s %s%d%%%s%s' "$C_MUTED" "$label" "$RESET" \
+    "$(tone "$pct")" "$on" "$C_TRACK" "$off" "$(tone "$pct")" "$pct" "$RESET" "$suffix"
 }
 
 # until <epoch> -> "2h05m" / "3d" countdown
@@ -44,13 +45,13 @@ effort=$(j '.effort.level')
 cwd=$(j '.workspace.current_dir'); [[ -z $cwd ]] && cwd=$(j '.cwd'); [[ -z $cwd ]] && cwd=$PWD
 
 line1="${BOLD}${C_MODEL}${model}${RESET}"
-[[ -n $effort ]] && line1+="${C_MUTED}${DOT}${RESET}${C_EFF}$(tr a-z A-Z <<<"$effort")${RESET}"
-line1+="   ${C_REPO}${I_REPO}$(basename "$cwd")${RESET}"
+[[ -n $effort ]] && line1+=" ${C_EFF}$(tr a-z A-Z <<<"$effort")${RESET}"
+line1+="${SEP}${C_REPO}${I_REPO}$(basename "$cwd")${RESET}"
 
 if root=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null); then
   branch=$(git -C "$cwd" symbolic-ref --short -q HEAD 2>/dev/null) || branch=$(git -C "$cwd" rev-parse --short HEAD 2>/dev/null) || branch="?"
   dirty=""; [[ -n $(git -C "$cwd" status --porcelain 2>/dev/null) ]] && dirty=" ${C_WARN}${I_DIRTY}${RESET}"
-  line1+=" ${C_BRANCH}${I_BRANCH}${branch}${RESET}${dirty}"
+  line1+="${SEP}${C_BRANCH}${I_BRANCH}${branch}${RESET}${dirty}"
 fi
 
 # ---------- line 2: gauges ----------
@@ -59,7 +60,7 @@ parts=()
 pct=$(j '.context_window.used_percentage')
 if [[ -n $pct ]]; then
   size=$(j '.context_window.context_window_size'); sfx=""
-  [[ -n $size ]] && sfx=" ${C_MUTED}${DIM}$(( size / 1000 ))k${RESET}"
+  [[ -n $size ]] && sfx="${C_MUTED}${DIM}/$(( size / 1000 ))k${RESET}"
   parts+=("$(gauge ctx "$pct" 10 "$sfx")")
 fi
 
@@ -67,11 +68,11 @@ for pair in "5h:five_hour" "7d:seven_day"; do
   label=${pair%%:*}; key=${pair##*:}
   p=$(j ".rate_limits.${key}.used_percentage"); [[ -z $p ]] && continue
   at=$(j ".rate_limits.${key}.resets_at"); sfx=""
-  [[ -n $at ]] && sfx=" ${C_MUTED}${DIM}${I_RESET}$(until_txt "${at%.*}")${RESET}"
+  [[ -n $at ]] && sfx=" ${C_MUTED}${DIM}$(until_txt "${at%.*}")${RESET}"
   parts+=("$(gauge "$label" "$p" 6 "$sfx")")
 done
 
 line2=""
-for p in "${parts[@]}"; do [[ -n $line2 ]] && line2+="   "; line2+="$p"; done
+for p in "${parts[@]}"; do [[ -n $line2 ]] && line2+="$SEP"; line2+="$p"; done
 
 printf '%s\n%s' "$line1" "$line2"

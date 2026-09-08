@@ -3,8 +3,8 @@
 A two-line status line for [Claude Code](https://claude.com/claude-code), in pure bash.
 
 ```
-Fable 5.1 · HIGH   󰉋 clowk-js  main ●
-ctx ▰▰▰▰▱▱▱▱▱▱  42% 200k   5h ▰▰▱▱▱▱  31% ↻2h05m   7d ▰▰▰▰▰▱  76% ↻3d01h
+Fable 5.1 HIGH  │  󰉋 clowk-js  │   main ●
+ctx ▰▰▰▰▱▱▱▱▱▱ 42%/200k  │  5h ▰▰▱▱▱▱ 31% 2h05m  │  7d ▰▰▰▰▰▱ 76% 3d01h
 ```
 
 - **Line 1:** model · effort level · repo · git branch (`●` = dirty tree)
