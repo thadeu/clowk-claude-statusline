@@ -75,4 +75,5 @@ done
 line2=""
 for p in "${parts[@]}"; do [[ -n $line2 ]] && line2+="$SEP"; line2+="$p"; done
 
-printf '%s\n%s\n ' "$line1" "$line2"
+# third line: a no-break space, so the host keeps an empty line under the gauges
+printf '%s\n%s\n\xc2\xa0' "$line1" "$line2"
