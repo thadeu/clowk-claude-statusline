@@ -37,7 +37,7 @@ Add to `~/.claude/settings.json`:
 | Variable | Effect |
 |---|---|
 | `STATUSLINE_ASCII=1` | Plain ASCII bars and no icons, for terminals without a Nerd Font |
-| `STATUSLINE_BG=#rrggbb` | Your terminal background color, used to hide the padding line below the gauges (default `#0c0b14`) |
+| `STATUSLINE_BG=#rrggbb` | Your terminal background color, used to hide the padding line below the gauges. Auto-detected from the active Ghostty theme; default `#0c0b14` |
 
 Set it in the command, for example `"command": "STATUSLINE_ASCII=1 ~/.claude/statusline/statusline.sh"`.
 

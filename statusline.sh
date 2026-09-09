@@ -3,7 +3,8 @@
 #   line 1: model · effort · repo · branch
 #   line 2: context / 5h limit / 7d limit gauges with reset countdown
 # Optional: STATUSLINE_ASCII=1 uses plain ASCII (no Nerd Font).
-#           STATUSLINE_BG=#rrggbb paints the padding line in your terminal background color.
+#           STATUSLINE_BG=#rrggbb paints the padding line in your terminal background color
+#           (auto-detected from the active Ghostty theme when unset).
 
 input=$(cat)
 j() { jq -r "$1 // empty" <<<"$input" 2>/dev/null; }
@@ -78,5 +79,30 @@ for p in "${parts[@]}"; do [[ -n $line2 ]] && line2+="$SEP"; line2+="$p"; done
 
 # third line: a dot painted in the terminal background color, so the host keeps
 # a padding line under the gauges. Set STATUSLINE_BG=#rrggbb to match your theme.
-bg=${STATUSLINE_BG:-#0c0b14}; bg=${bg#\#}
+ghostty_bg() {
+  local cfg theme bgc="" thm=""
+  for cfg in "$HOME/Library/Application Support/com.mitchellh.ghostty/config" "$HOME/.config/ghostty/config"; do
+    [[ -f $cfg ]] || continue
+    while IFS= read -r line; do
+      line=$(tr -d ' ' <<<"$line")
+      case $line in
+        background=*) bgc=${line#*=} ;;
+        theme=*)      thm=${line#*=} ;;
+      esac
+    done <"$cfg"
+  done
+  # "theme = light:x,dark:y" -> use the dark entry
+  [[ $thm == *dark:* ]] && { thm=${thm#*dark:}; thm=${thm%%,*}; }
+  if [[ -n $thm && -z $bgc ]]; then
+    for f in "$HOME/.config/ghostty/themes/$thm" "/Applications/Ghostty.app/Contents/Resources/ghostty/themes/$thm"; do
+      [[ -f $f ]] || continue
+      bgc=$(sed -n 's/^background *= *//p' "$f" | head -1 | tr -d ' ')
+      break
+    done
+  fi
+  printf '%s' "$bgc"
+}
+bg=$STATUSLINE_BG
+[[ -z $bg && $TERM_PROGRAM == ghostty ]] && bg=$(ghostty_bg)
+bg=${bg:-#0c0b14}; bg=${bg#\#}
 printf '%s\n%s\n\e[38;2;%d;%d;%dm\xc2\xb7%s' "$line1" "$line2" "0x${bg:0:2}" "0x${bg:2:2}" "0x${bg:4:2}" "$RESET"
