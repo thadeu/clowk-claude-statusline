@@ -75,5 +75,5 @@ done
 line2=""
 for p in "${parts[@]}"; do [[ -n $line2 ]] && line2+="$SEP"; line2+="$p"; done
 
-# third line: a no-break space, so the host keeps an empty line under the gauges
-printf '%s\n%s\n\xc2\xa0' "$line1" "$line2"
+# third line: a dim dot, so the host keeps a padding line under the gauges
+printf '%s\n%s\n%s\xc2\xb7%s' "$line1" "$line2" "$C_TRACK" "$RESET"
