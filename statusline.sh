@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Claude Code status line (two lines). Reads JSON on stdin. Needs: bash, jq, git.
-#   line 1: model · effort · repo · branch
-#   line 2: context / 5h limit / 7d limit gauges with reset countdown
+#   line 1: model · effort · repo · branch · session
+#   line 2: context gauge · cost · duration · lines · thinking · 5h/7d gauges
 # Optional: STATUSLINE_ASCII=1 uses plain ASCII (no Nerd Font).
 #           STATUSLINE_BG=#rrggbb paints the padding line in your terminal background color
 #           (auto-detected from the active Ghostty theme when unset).
@@ -56,7 +56,10 @@ if root=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null); then
   line1+=" ${C_MUTED}(${RESET}${C_BRANCH}${branch}${RESET}${dirty}${C_MUTED})${RESET}"
 fi
 
-# ---------- line 2: gauges ----------
+session_name=$(j '.session_name')
+[[ -n $session_name ]] && line1+="${SEP}${C_MUTED}${DIM}${session_name}${RESET}"
+
+# ---------- line 2: gauges + apple metrics ----------
 parts=()
 
 pct=$(j '.context_window.used_percentage')
@@ -65,6 +68,28 @@ if [[ -n $pct ]]; then
   [[ -n $size ]] && sfx="${C_MUTED}${DIM}/$(( size / 1000 ))k${RESET}"
   parts+=("$(gauge ctx "$pct" 10 "$sfx")")
 fi
+
+cost_usd=$(j '.cost.total_cost_usd')
+[[ -n $cost_usd ]] && parts+=("$(printf '%s$%s%.2f%s' "$C_MUTED" "$C_OK" "$cost_usd" "$RESET")")
+
+dur_ms=$(j '.cost.total_duration_ms')
+if [[ -n $dur_ms ]]; then
+  s=$(( dur_ms / 1000 ))
+  h=$(( s / 3600 )); m=$(( s % 3600 / 60 )); sec=$(( s % 60 ))
+  if (( h > 0 )); then dur_txt=$(printf '%dh%02dm' "$h" "$m")
+  elif (( m > 0 )); then dur_txt=$(printf '%dm%02ds' "$m" "$sec")
+  else dur_txt=$(printf '%ds' "$sec")
+  fi
+  parts+=("${C_MUTED}${dur_txt}${RESET}")
+fi
+
+added=$(j '.cost.total_lines_added')
+removed=$(j '.cost.total_lines_removed')
+if [[ -n $added || -n $removed ]]; then
+  parts+=("$(printf '%s+%s%s %s-%s%s' "$C_OK" "${added:-0}" "$RESET" "$C_BAD" "${removed:-0}" "$RESET")")
+fi
+
+[[ $(j '.thinking.enabled') == "true" ]] && parts+=("${C_EFF}thinking${RESET}")
 
 for pair in "5h:five_hour" "7d:seven_day"; do
   label=${pair%%:*}; key=${pair##*:}
